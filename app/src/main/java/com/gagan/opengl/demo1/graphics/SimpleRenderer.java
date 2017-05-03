@@ -212,10 +212,11 @@ public class SimpleRenderer implements GLSurfaceView.Renderer {
 
         drawTriangle();
         drawSquare();
-        drawCircle();
-//        drawface();
+//        drawCircle();
 //        drawPolygon();
-//drawPolygonTest();
+        drawPolygonTest();
+//        drawface();
+
 
     }
 
@@ -419,88 +420,113 @@ public class SimpleRenderer implements GLSurfaceView.Renderer {
     }
 
     private void drawPolygonTest() {
-Polygon polygon = new Polygon(800.0f, 1200.0f, 2.0f, 4);
-        FloatBuffer FVertexBuffer = polygon.getVertexBuffer();
-        ShortBuffer IndexBuffer = polygon.getIndexBuffer();
-        int numOfIndecies = polygon.getNumberOfIndecies();
-        FVertexBuffer.position(0);
-        IndexBuffer.position(0);
+        Polygon polygon = new Polygon(
+                550.0f,  //center_X
+                1000.0f, //center_Y
+                300.0f, //radius
+                10 //number of sides+2
+        );
+        FloatBuffer vertexBuffer = polygon.getVertexBuffer();
+        FloatBuffer textureBuffer = polygon.getTextureBuffer();
+        vertexBuffer.position(0);
+        textureBuffer.position(0);
         glVertexAttribPointer(aPositionHandle, 2, GLES20.GL_FLOAT, false,
-                0, FVertexBuffer);
-        glDrawElements(GL10.GL_TRIANGLES, numOfIndecies,
-                GL10.GL_UNSIGNED_SHORT, IndexBuffer);
+                0, vertexBuffer);
+        glVertexAttribPointer(aTextureCoordinatesHandle, 2, GLES20.GL_FLOAT, false,
+                0, textureBuffer);
+        glDrawArrays(GL10.GL_TRIANGLE_FAN, 0, polygon.getSides());
     }
 
     private void drawPolygon() {
-//        50f, 500f,
-//                500f, 500f,
-//                275f, 100f,
-//        final float[] polygonVertices = new float[100];
-//
-//        for (int i = 0; i < polygonVertices.length; i++) {
-//            polygonVertices[0] = 300+i;
-//            polygonVertices[1] = 700+i;
-//        }
-        final float[] polygonVertices = {
-                100f, 700f,
-                300f, 700f,
-                500f, 900f,
-                300f, 1000f,
-                100f, 1000f,
-                300f, 1000f,
-                300f, 700f,
+// Circle variables
+        int circlePoints = 100;
+        float radius = 300.0f;
+        float center_x = 550.0f;
+        float center_y = 1000.0f;
+
+        // Outer vertices of the circle i.e. excluding the center_x, center_y
+        int circumferencePoints = circlePoints - 1;
+
+        // Circle vertices and buffer variables
+        int vertices = 0;
+        float circleVertices[] = new float[circlePoints * 2];
+        FloatBuffer vertexBuff; // 4 bytes per float
+
+        // The initial buffer values
+        circleVertices[vertices++] = center_x;
+        circleVertices[vertices++] = center_y;
+
+        // Set circle vertices values
+        for (int i = 0; i < circumferencePoints; i++) {
+            float percent = (i / (float) (circumferencePoints - 1));
+            float radians = (float) (percent * 2 * Math.PI);
 
 
-        };
+            // Vertex position
+            float outer_x = (float) (center_x + radius * Math.cos(radians));
+            float outer_y = (float) (center_y + radius * Math.sin(radians));
 
+            circleVertices[vertices++] = outer_x;
+            circleVertices[vertices++] = outer_y;
+        }
 
-// Initialize the buffers.
-        FloatBuffer vertexData = ByteBuffer.allocateDirect(polygonVertices.length * 4)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer().put(polygonVertices);
-        vertexData.position(0);
+        // Float buffer short has four bytes
+        ByteBuffer vertexByteBuff = ByteBuffer
+                .allocateDirect(circleVertices.length * 4);
+
+        // Garbage collector won't throw this away
+        vertexByteBuff.order(ByteOrder.nativeOrder());
+        vertexBuff = vertexByteBuff.asFloatBuffer();
+        vertexBuff.put(circleVertices);
+        vertexBuff.position(0);
         glVertexAttribPointer(aPositionHandle, 2, GLES20.GL_FLOAT, false,
-                0, vertexData);
+                0, vertexBuff);
 
-//        final float[] textureData = new float[100];
-//
-//        for (int i = 0; i < textureData.length; i++) {
-//            textureData[0] = 300+i/1000;
-//            textureData[1] = 700+i/1000;
-//        }
-        final float[] textureData = {
-                0.100f, 100f,
-                100f, 300f,
-                400f, 300f,
-                600f, 150f,
-                400f, 100f,
-        };
 
-        FloatBuffer textureDataBuffer = ByteBuffer.allocateDirect(textureData.length * 4)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer().put(textureData);
-        textureDataBuffer.rewind();
+        float textureRadius = 0.300f;
+        float textureCenter_x = 0.550f;
+        float textureCenter_y = 1.000f;
 
+        // Outer vertices of the circle i.e. excluding the center_x, center_y
+        int textureCircumferencePoints = circlePoints - 1;
+
+        // Circle vertices and buffer variables
+        int textureVertices = 0;
+        float textureVircleVertices[] = new float[circlePoints * 2];
+        FloatBuffer textureVertexBuff; // 4 bytes per float
+
+        // The initial buffer values
+        textureVircleVertices[textureVertices++] = textureCenter_x;
+        textureVircleVertices[textureVertices++] = textureCenter_y;
+
+        // Set circle vertices values
+        for (int i = 0; i < textureCircumferencePoints; i++) {
+            float percent = (i / (float) (textureCircumferencePoints - 1));
+            float radians = (float) (percent * 2 * Math.PI);
+
+
+            // Vertex position
+            float outer_x = (float) (textureCenter_x + textureRadius * Math.cos(radians));
+            float outer_y = (float) (textureCenter_y + textureRadius * Math.sin(radians));
+
+            textureVircleVertices[textureVertices++] = outer_x;
+            textureVircleVertices[textureVertices++] = outer_y;
+        }
+
+        // Float buffer short has four bytes
+        ByteBuffer textureVertexByteBuff = ByteBuffer
+                .allocateDirect(textureVircleVertices.length * 4);
+
+        // Garbage collector won't throw this away
+        textureVertexByteBuff.order(ByteOrder.nativeOrder());
+        textureVertexBuff = textureVertexByteBuff.asFloatBuffer();
+        textureVertexBuff.put(textureVircleVertices);
+        textureVertexBuff.position(0);
         glVertexAttribPointer(aTextureCoordinatesHandle, 2, GLES20.GL_FLOAT, false,
-                0, textureDataBuffer);
+                0, textureVertexBuff);
 
-//        final short drawOrder[] = {0, 1, 2, 0, 2, 3};
-//
-//        // initialize byte buffer for the draw list
-//        ShortBuffer drawListBuffer = ByteBuffer.allocateDirect(
-//                // (# of coordinate values * 2 bytes per short)
-//                drawOrder.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer().put(drawOrder);
-//        drawListBuffer.position(0);
-
-
-        // Pass in the color information
-//        vertexData.position(mColorOffset);
-//        glVertexAttribPointer(aColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-//                mStrideBytes, vertexData);
-//
-//        glEnableVertexAttribArray(aColorHandle);
-
-        // Draw the square
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, polygonVertices.length / 2);
-
+        // Draw circle as filled shape
+        glDrawArrays(GL_TRIANGLE_FAN, 0, circlePoints);
     }
 
     private void drawface() {
